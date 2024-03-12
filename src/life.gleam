@@ -6,14 +6,14 @@ import gleam/string
 pub fn main() {
   let board =
     new_board(5, 5)
-    |> set_cell(row: 1, col: 2, state: Alive)
-    |> set_cell(row: 2, col: 2, state: Alive)
-    |> set_cell(row: 3, col: 2, state: Alive)
+    |> set_cell(Position(row: 1, col: 2), state: Alive)
+    |> set_cell(Position(row: 2, col: 2), state: Alive)
+    |> set_cell(Position(row: 3, col: 2), state: Alive)
 
-  render_board(
-    board
-    |> next_generation,
-  )
+  board
+  |> next_generation
+  |> next_generation
+  |> render_board
 }
 
 pub type CellState {
@@ -21,44 +21,46 @@ pub type CellState {
   Alive
 }
 
+pub type Position {
+  Position(row: Int, col: Int)
+}
+
 pub type Cell {
-  Cell(state: CellState, col: Int, row: Int)
+  Cell(state: CellState, position: Position)
 }
 
 pub type Board {
-  Board(grid: dict.Dict(#(Int, Int), Cell), height: Int, width: Int)
+  Board(grid: dict.Dict(Position, Cell), height: Int, width: Int)
 }
 
 pub fn new_board(width: Int, height: Int) -> Board {
   let grid =
     list.range(0, width * height)
     |> list.map(fn(i) {
-      let x = i % width
-      let y = i / height
+      let position = Position(row: i % width, col: i / height)
 
-      #(#(x, y), Cell(col: x, row: y, state: Dead))
+      #(position, Cell(state: Dead, position: position))
     })
     |> dict.from_list
 
   Board(grid, height, width)
 }
 
-pub fn get_cell(board board: Board, row row: Int, col col: Int) -> Cell {
-  case dict.get(board.grid, #(row, col)) {
+pub fn get_cell(board board: Board, position position: Position) -> Cell {
+  case dict.get(board.grid, position) {
     Ok(cell) -> cell
-    _ -> Cell(state: Dead, col: col, row: row)
+    _ -> Cell(state: Dead, position: position)
   }
 }
 
 pub fn set_cell(
   board board: Board,
-  col col: Int,
-  row row: Int,
+  position position: Position,
   state state: CellState,
 ) -> Board {
   let new_grid =
-    dict.update(board.grid, #(row, col), fn(_) {
-      Cell(col: col, row: row, state: state)
+    dict.update(board.grid, position, fn(_) {
+      Cell(position: position, state: state)
     })
 
   Board(..board, grid: new_grid)
@@ -76,7 +78,7 @@ pub fn render_board(board: Board) {
   |> list.map(fn(y) {
     range_x
     |> list.map(fn(x) {
-      let cell = get_cell(board, y, x)
+      let cell = get_cell(board, Position(row: y, col: x))
 
       case cell.state {
         Alive -> live_cell
@@ -95,34 +97,30 @@ pub fn join_list(chars: List(String)) -> String {
 
 pub fn get_neighbours(
   board board: Board,
-  row row: Int,
-  col col: Int,
+  position position: Position,
 ) -> List(Cell) {
+  let Position(row, col) = position
   let neigbours = [
-    #(row - 1, col - 1),
-    #(row, col - 1),
-    #(row + 1, col - 1),
-    #(row - 1, col),
-    #(row + 1, col),
-    #(row - 1, col + 1),
-    #(row, col + 1),
-    #(row + 1, col + 1),
+    Position(row - 1, col - 1),
+    Position(row - 1, col),
+    Position(row - 1, col + 1),
+    Position(row, col - 1),
+    Position(row, col + 1),
+    Position(row + 1, col - 1),
+    Position(row + 1, col),
+    Position(row + 1, col + 1),
   ]
 
   neigbours
-  |> list.map(fn(position) {
-    let #(row, col) = position
-    get_cell(board, row, col)
-  })
+  |> list.map(get_cell(board, _))
 }
 
 pub fn count_live_neighbours(
   board board: Board,
-  row row: Int,
-  col col: Int,
+  position position: Position,
 ) -> Int {
   board
-  |> get_neighbours(row: row, col: col)
+  |> get_neighbours(position)
   |> list.filter(is_alive)
   |> list.length
 }
@@ -131,10 +129,9 @@ pub fn next_generation(board: Board) -> Board {
   let new_grid =
     board.grid
     |> dict.map_values(fn(position, cell) {
-      let #(row, col) = position
       let live_neighbours =
         board
-        |> count_live_neighbours(row, col)
+        |> count_live_neighbours(position)
 
       case #(cell.state, live_neighbours) {
         #(Alive, count) ->
