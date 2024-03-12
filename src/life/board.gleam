@@ -185,7 +185,7 @@ pub fn play(board: Board, generations: Int) -> Nil {
       io.println("Generations left: " <> int.to_string(generations))
       io.println("> hit Ctrl-C to stop the program")
 
-      process.sleep(1000 / 16)
+      process.sleep(1000 / 60)
 
       play(next_generation(board), generations - 1)
     }
