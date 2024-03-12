@@ -2,6 +2,7 @@
 # You typically do not need to edit this file
 
 packages = [
+  { name = "argv", version = "1.0.1", build_tools = ["gleam"], requirements = [], otp_app = "argv", source = "hex", outer_checksum = "A6E9009E50BBE863EB37D963E4315398D41A3D87D0075480FC244125808F964A" },
   { name = "filepath", version = "0.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "filepath", source = "hex", outer_checksum = "FC1B1B29438A5BA6C990F8047A011430BEC0C5BA638BFAA62718C4EAEFE00435" },
   { name = "gleam_erlang", version = "0.24.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_erlang", source = "hex", outer_checksum = "26BDB52E61889F56A291CB34167315780EE4AA20961917314446542C90D1C1A0" },
   { name = "gleam_stdlib", version = "0.36.0", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "C0D14D807FEC6F8A08A7C9EF8DFDE6AE5C10E40E21325B2B29365965D82EB3D4" },
@@ -13,6 +14,8 @@ packages = [
 ]
 
 [requirements]
+argv = { version = "~> 1.0"}
+gleam_erlang = { version = "~> 0.24" }
 gleam_stdlib = { version = "~> 0.34 or ~> 1.0" }
-gleescript = { version = "~> 1.0"}
+gleescript = { version = "~> 1.0" }
 gleeunit = { version = "~> 1.0" }

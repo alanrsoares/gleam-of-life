@@ -1,14 +1,30 @@
-import board.{Alive, Position}
+import gleam/int
+import gleam/io
+import argv
+import life/board
 
 pub fn main() {
-  let new_board =
-    board.new(5, 5)
-    |> board.set_cell(Position(row: 1, col: 2), state: Alive)
-    |> board.set_cell(Position(row: 2, col: 2), state: Alive)
-    |> board.set_cell(Position(row: 3, col: 2), state: Alive)
+  case argv.load().arguments {
+    [arg_key, arg_value] -> {
+      case arg_key {
+        "--generations" | "-g" -> {
+          let generations = case int.parse(arg_value) {
+            Ok(g) -> g
+            Error(_) -> 10
+          }
 
-  new_board
-  |> board.next_generation
-  |> board.next_generation
-  |> board.play(10)
+          board.random(25, 25)
+          |> board.next_generation
+          |> board.next_generation
+          |> board.play(generations)
+        }
+        _ -> render_usage()
+      }
+    }
+    _ -> render_usage()
+  }
+}
+
+pub fn render_usage() {
+  io.println("Usage: life [--generations | -g] <number of generations>")
 }
