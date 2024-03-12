@@ -24,7 +24,7 @@ pub type Board {
   Board(grid: dict.Dict(Position, CellState), height: Int, width: Int)
 }
 
-/// Create a new board
+/// Create a new board with a cell initialiser
 /// 
 pub fn new_with(width: Int, height: Int, with: fn() -> CellState) -> Board {
   let grid =
