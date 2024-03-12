@@ -14,8 +14,6 @@ pub fn main() {
           }
 
           board.random(25, 25)
-          |> board.next_generation
-          |> board.next_generation
           |> board.play(generations)
         }
         _ -> render_usage()
