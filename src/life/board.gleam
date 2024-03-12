@@ -179,9 +179,11 @@ pub fn play(board: Board, generations: Int) -> Nil {
   |> render
 
   case generations {
-    0 -> Nil
+    0 -> io.println("\nDone\n")
     _ -> {
-      io.println("\nhit Ctrl-C to stop the program\n")
+      io.println("")
+      io.println("Generations left: " <> int.to_string(generations))
+      io.println("> hit Ctrl-C to stop the program")
 
       process.sleep(1000 / 16)
 
