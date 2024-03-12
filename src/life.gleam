@@ -39,7 +39,7 @@ pub fn new_board(width: Int, height: Int) -> Board {
     |> list.map(fn(i) {
       let position = Position(row: i % width, col: i / height)
 
-      #(position, Cell(state: Dead, position: position))
+      #(position, Cell(Dead, position))
     })
     |> dict.from_list
 
@@ -49,7 +49,7 @@ pub fn new_board(width: Int, height: Int) -> Board {
 pub fn get_cell(board board: Board, position position: Position) -> Cell {
   case dict.get(board.grid, position) {
     Ok(cell) -> cell
-    _ -> Cell(state: Dead, position: position)
+    _ -> Cell(Dead, position)
   }
 }
 
@@ -70,7 +70,7 @@ const dead_cell = "⬛"
 
 const live_cell = "⬜"
 
-pub fn render_board(board: Board) {
+pub fn render_board(board: Board) -> Nil {
   let range_y = list.range(0, board.height - 1)
   let range_x = list.range(0, board.width - 1)
 
@@ -87,7 +87,7 @@ pub fn render_board(board: Board) {
     })
   })
   |> list.map(join_list)
-  |> list.map(io.println)
+  |> list.each(io.println)
 }
 
 pub fn join_list(chars: List(String)) -> String {
