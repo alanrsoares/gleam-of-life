@@ -110,7 +110,10 @@ pub fn get_neighbours(
   ]
 
   neigbours
-  |> list.map(fn(tuple) { get_cell(board, tuple.0, tuple.1) })
+  |> list.map(fn(position) {
+    let #(row, col) = position
+    get_cell(board, row, col)
+  })
 }
 
 pub fn count_live_neighbours(
@@ -125,32 +128,24 @@ pub fn count_live_neighbours(
 }
 
 pub fn next_generation(board: Board) -> Board {
-  let range_y = list.range(0, board.height - 1)
-  let range_x = list.range(0, board.width - 1)
-
   let new_grid =
-    range_y
-    |> list.map(fn(row) {
-      range_x
-      |> list.map(fn(col) {
-        let cell = get_cell(board, row, col)
+    board.grid
+    |> dict.map_values(fn(position, cell) {
+      let #(row, col) = position
+      let live_neighbours =
+        board
+        |> count_live_neighbours(row, col)
 
-        let live_neighbours =
-          board
-          |> count_live_neighbours(row, col)
-
-        case #(cell.state, live_neighbours) {
-          #(Alive, 2) -> cell
-          #(Alive, 3) -> cell
-          #(Alive, _) -> Cell(col: col, row: row, state: Dead)
-          #(Dead, 3) -> Cell(col: col, row: row, state: Alive)
-          #(Dead, _) -> cell
-        }
-      })
+      case #(cell.state, live_neighbours) {
+        #(Alive, count) ->
+          case count {
+            2 | 3 -> cell
+            _ -> Cell(..cell, state: Dead)
+          }
+        #(Dead, 3) -> Cell(..cell, state: Alive)
+        #(Dead, _) -> cell
+      }
     })
-    |> list.flatten
-    |> list.map(fn(cell) { #(#(cell.row, cell.col), cell) })
-    |> dict.from_list
 
   Board(..board, grid: new_grid)
 }
