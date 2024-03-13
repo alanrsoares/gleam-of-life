@@ -41,12 +41,11 @@ pub fn block_pattern_test() {
   |> should.equal(board_1)
 }
 
-pub fn from_seed_test() {
-  let board_seed = [
-    ["⬛", "⬜", "⬛"],
-    ["⬛", "⬜", "⬛"],
-    ["⬛", "⬜", "⬛"],
-  ]
+pub fn from_to_seed_test() {
+  let x = True
+  let o = False
+
+  let seed = [[o, x, o], [o, x, o], [o, x, o]]
 
   let board_1 =
     board.new(3, 3)
@@ -55,7 +54,7 @@ pub fn from_seed_test() {
     |> board.set(Position(row: 2, col: 1), Alive)
 
   let board_2 =
-    board_seed
+    seed
     |> board.from_seed
 
   board_2
@@ -69,5 +68,5 @@ pub fn from_seed_test() {
 
   board_1
   |> board.to_seed
-  |> should.equal(board_seed)
+  |> should.equal(seed)
 }

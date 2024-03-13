@@ -63,7 +63,7 @@ pub fn random(width: Int, height: Int) -> Board {
 
 /// Create a new board from a seed matrix
 ///
-pub fn from_seed(rows: List(List(String))) -> Board {
+pub fn from_seed(rows: List(List(Bool))) -> Board {
   let height = list.length(rows)
   let width = case list.first(rows) {
     Ok(row) -> list.length(row)
@@ -80,11 +80,10 @@ pub fn from_seed(rows: List(List(String))) -> Board {
         |> list.at(position.row)
         |> result.unwrap([])
         |> list.at(position.col)
-        |> result.unwrap("⬛")
+        |> result.unwrap(False)
 
       let cell_state = case cell {
-        "⬜" -> Alive
-        "⬛" -> Dead
+        True -> Alive
         _ -> Dead
       }
 
@@ -97,7 +96,7 @@ pub fn from_seed(rows: List(List(String))) -> Board {
 
 /// Convert the board to a seed matrix
 /// 
-pub fn to_seed(board: Board) -> List(List(String)) {
+pub fn to_seed(board: Board) -> List(List(Bool)) {
   let range_y = list.range(0, board.height - 1)
   let range_x = list.range(0, board.width - 1)
 
@@ -110,8 +109,8 @@ pub fn to_seed(board: Board) -> List(List(String)) {
         |> get(Position(row: y, col: x))
 
       case cell {
-        Alive -> "⬜"
-        _ -> "⬛"
+        Alive -> True
+        _ -> False
       }
     })
   })
