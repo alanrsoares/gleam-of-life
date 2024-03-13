@@ -1,6 +1,6 @@
 import gleeunit
 import gleeunit/should
-import life/board.{Alive, Position}
+import life/board.{Position}
 
 pub fn main() {
   gleeunit.main()
@@ -9,15 +9,15 @@ pub fn main() {
 pub fn alernating_pattern_test() {
   let board_1 =
     board.new(3, 3)
-    |> board.set(Position(row: 0, col: 1), Alive)
-    |> board.set(Position(row: 1, col: 1), Alive)
-    |> board.set(Position(row: 2, col: 1), Alive)
+    |> board.toggle(Position(row: 0, col: 1))
+    |> board.toggle(Position(row: 1, col: 1))
+    |> board.toggle(Position(row: 2, col: 1))
 
   let board_2 =
     board.new(3, 3)
-    |> board.set(Position(row: 1, col: 0), Alive)
-    |> board.set(Position(row: 1, col: 1), Alive)
-    |> board.set(Position(row: 1, col: 2), Alive)
+    |> board.toggle(Position(row: 1, col: 0))
+    |> board.toggle(Position(row: 1, col: 1))
+    |> board.toggle(Position(row: 1, col: 2))
 
   board_1
   |> board.next_generation()
@@ -31,10 +31,10 @@ pub fn alernating_pattern_test() {
 pub fn block_pattern_test() {
   let board_1 =
     board.new(3, 3)
-    |> board.set(Position(row: 0, col: 0), Alive)
-    |> board.set(Position(row: 0, col: 1), Alive)
-    |> board.set(Position(row: 1, col: 0), Alive)
-    |> board.set(Position(row: 1, col: 1), Alive)
+    |> board.toggle(Position(row: 0, col: 0))
+    |> board.toggle(Position(row: 0, col: 1))
+    |> board.toggle(Position(row: 1, col: 0))
+    |> board.toggle(Position(row: 1, col: 1))
 
   board_1
   |> board.next_generation()

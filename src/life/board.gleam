@@ -140,14 +140,10 @@ pub fn set(
 /// Toggle the state of a cell
 /// 
 pub fn toggle(board board: Board, position position: Position) -> Board {
-  let cell =
-    board
-    |> get(position)
-
-  case cell {
-    Alive -> set(board, position, Dead)
-    _ -> set(board, position, Alive)
-  }
+  set(board, position, case get(board, position) {
+    Alive -> Dead
+    _ -> Alive
+  })
 }
 
 /// Get the neighbouring cells of a cell
