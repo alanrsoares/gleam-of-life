@@ -2,7 +2,8 @@ import gleam/io
 import gleam/list
 import gleam/dict
 import gleam/int
-import life/utils
+import gleam/string
+import gleam/result
 import gleam/erlang/process
 
 /// A cell can be dead or alive
@@ -23,6 +24,10 @@ pub type Position {
 pub type Board {
   Board(grid: dict.Dict(Position, CellState), height: Int, width: Int)
 }
+
+pub const dead_cell = "⬛"
+
+pub const live_cell = "⬜"
 
 /// Create a new board with a cell initialiser
 /// 
@@ -56,6 +61,62 @@ pub fn random(width: Int, height: Int) -> Board {
   })
 }
 
+/// Create a new board from a seed matrix
+///
+pub fn from_seed(rows: List(List(String))) -> Board {
+  let height = list.length(rows)
+  let width = case list.first(rows) {
+    Ok(row) -> list.length(row)
+    _ -> panic("Seed must have at least one row")
+  }
+
+  let grid =
+    list.range(0, width * height)
+    |> list.map(fn(i) {
+      let position = Position(row: i % width, col: i / height)
+
+      let cell =
+        rows
+        |> list.at(position.row)
+        |> result.unwrap([])
+        |> list.at(position.col)
+        |> result.unwrap("⬛")
+
+      let cell_state = case cell {
+        "⬜" -> Alive
+        "⬛" -> Dead
+        _ -> Dead
+      }
+
+      #(position, cell_state)
+    })
+    |> dict.from_list
+
+  Board(grid, height, width)
+}
+
+/// Convert the board to a seed matrix
+/// 
+pub fn to_seed(board: Board) -> List(List(String)) {
+  let range_y = list.range(0, board.height - 1)
+  let range_x = list.range(0, board.width - 1)
+
+  range_y
+  |> list.map(fn(y) {
+    range_x
+    |> list.map(fn(x) {
+      let cell =
+        board
+        |> get(Position(row: y, col: x))
+
+      case cell {
+        Alive -> "⬜"
+        _ -> "⬛"
+      }
+    })
+  })
+}
+
 /// Get the state of a cell
 /// 
 pub fn get(board board: Board, position position: Position) -> CellState {
@@ -76,10 +137,6 @@ pub fn set(
 
   Board(..board, grid: new_grid)
 }
-
-const dead_cell = "⬛"
-
-const live_cell = "⬜"
 
 /// Get the neighbouring cells of a cell
 /// 
@@ -145,12 +202,9 @@ pub fn is_alive(cell: CellState) -> Bool {
   cell == Alive
 }
 
-/// Render the board to the terminal
+/// Convert the board to a string
 /// 
-pub fn render(board: Board) -> Nil {
-  // clear the terminal
-  io.print("\u{001B}[2J\u{001B}[;H")
-
+pub fn to_string(board: Board) {
   let range_y = list.range(0, board.height - 1)
   let range_x = list.range(0, board.width - 1)
 
@@ -168,8 +222,19 @@ pub fn render(board: Board) -> Nil {
       }
     })
   })
-  |> list.map(utils.join_list)
-  |> list.each(io.println)
+  |> list.map(string.join(_, ""))
+  |> string.join("\n")
+}
+
+/// Render the board to the terminal
+/// 
+pub fn render(board: Board) -> Nil {
+  // clear the terminal
+  io.print("\u{001B}[2J\u{001B}[;H")
+
+  board
+  |> to_string
+  |> io.println
 }
 
 /// Play the game of life for a number of generations
