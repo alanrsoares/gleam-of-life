@@ -137,6 +137,19 @@ pub fn set(
   Board(..board, grid: new_grid)
 }
 
+/// Toggle the state of a cell
+/// 
+pub fn toggle(board board: Board, position position: Position) -> Board {
+  let cell =
+    board
+    |> get(position)
+
+  case cell {
+    Alive -> set(board, position, Dead)
+    _ -> set(board, position, Alive)
+  }
+}
+
 /// Get the neighbouring cells of a cell
 /// 
 pub fn neighbours(

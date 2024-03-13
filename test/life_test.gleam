@@ -49,9 +49,9 @@ pub fn from_to_seed_test() {
 
   let board_1 =
     board.new(3, 3)
-    |> board.set(Position(row: 0, col: 1), Alive)
-    |> board.set(Position(row: 1, col: 1), Alive)
-    |> board.set(Position(row: 2, col: 1), Alive)
+    |> board.toggle(Position(row: 0, col: 1))
+    |> board.toggle(Position(row: 1, col: 1))
+    |> board.toggle(Position(row: 2, col: 1))
 
   let board_2 =
     seed
