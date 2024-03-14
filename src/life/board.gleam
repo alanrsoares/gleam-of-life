@@ -3,26 +3,18 @@ import gleam/list
 import gleam/dict
 import gleam/int
 import gleam/string
-import gleam/result
 import gleam/erlang/process
+import life/matrix.{Position}
 
 /// A cell can be dead or alive
 /// 
-pub type CellState {
-  Dead
-  Alive
-}
-
-/// A position on the board
-/// 
-pub type Position {
-  Position(row: Int, col: Int)
-}
+pub type IsAlive =
+  Bool
 
 /// A board is a grid of cells
 /// 
 pub type Board {
-  Board(grid: dict.Dict(Position, CellState), height: Int, width: Int)
+  Board(grid: dict.Dict(matrix.Position, IsAlive), height: Int, width: Int)
 }
 
 pub const dead_cell = "⬛"
@@ -31,39 +23,38 @@ pub const live_cell = "⬜"
 
 /// Create a new board with a cell initialiser
 /// 
-pub fn new_with(width: Int, height: Int, with: fn() -> CellState) -> Board {
+pub fn new_with(
+  width width: Int,
+  height height: Int,
+  with fun: fn() -> IsAlive,
+) -> Board {
   let grid =
-    list.range(0, width * height)
-    |> list.map(fn(i) {
-      let position = Position(row: i % width, col: i / height)
-
-      #(position, with())
-    })
-    |> dict.from_list
+    matrix.new_with(height, width, fun)
+    |> matrix.to_dict
 
   Board(grid, height, width)
 }
 
 /// Create a new board
 /// 
-pub fn new(width: Int, height: Int) -> Board {
-  new_with(width, height, fn() { Dead })
+pub fn new(width width: Int, height height: Int) -> Board {
+  new_with(width, height, fn() { False })
 }
 
 /// Create a new board with a random state
 /// 
-pub fn random(width: Int, height: Int) -> Board {
+pub fn random(width width: Int, height height: Int) -> Board {
   new_with(width, height, fn() {
     case int.random(5) {
-      0 -> Alive
-      _ -> Dead
+      0 -> True
+      _ -> False
     }
   })
 }
 
 /// Create a new board from a seed matrix
 ///
-pub fn from_seed(rows: List(List(Bool))) -> Board {
+pub fn from_seed(rows: matrix.Matrix(IsAlive)) -> Board {
   let height = list.length(rows)
   let width = case list.first(rows) {
     Ok(row) -> list.length(row)
@@ -71,57 +62,34 @@ pub fn from_seed(rows: List(List(Bool))) -> Board {
   }
 
   let grid =
-    list.range(0, width * height)
-    |> list.map(fn(i) {
-      let position = Position(row: i % width, col: i / height)
-
-      let cell =
-        rows
-        |> list.at(position.row)
-        |> result.unwrap([])
-        |> list.at(position.col)
-        |> result.unwrap(False)
-
-      let cell_state = case cell {
-        True -> Alive
-        _ -> Dead
-      }
-
-      #(position, cell_state)
-    })
-    |> dict.from_list
+    rows
+    |> matrix.to_dict
 
   Board(grid, height, width)
 }
 
 /// Convert the board to a seed matrix
 /// 
-pub fn to_seed(board: Board) -> List(List(Bool)) {
-  let range_y = list.range(0, board.height - 1)
-  let range_x = list.range(0, board.width - 1)
+pub fn to_seed(board: Board) -> matrix.Matrix(IsAlive) {
+  let rows = list.range(0, board.height - 1)
+  let cols = list.range(0, board.width - 1)
 
-  range_y
+  rows
   |> list.map(fn(y) {
-    range_x
+    cols
     |> list.map(fn(x) {
-      let cell =
-        board
-        |> get(Position(row: y, col: x))
-
-      case cell {
-        Alive -> True
-        _ -> False
-      }
+      board
+      |> get(Position(y, x))
     })
   })
 }
 
 /// Get the state of a cell
 /// 
-pub fn get(board board: Board, position position: Position) -> CellState {
+pub fn get(board board: Board, position position: matrix.Position) -> IsAlive {
   case dict.get(board.grid, position) {
     Ok(cell) -> cell
-    _ -> Dead
+    _ -> False
   }
 }
 
@@ -129,20 +97,22 @@ pub fn get(board board: Board, position position: Position) -> CellState {
 /// 
 pub fn set(
   board board: Board,
-  position position: Position,
-  state state: CellState,
+  position position: matrix.Position,
+  state state: IsAlive,
 ) -> Board {
-  let new_grid = dict.update(board.grid, position, fn(_) { state })
+  let next_grid =
+    board.grid
+    |> dict.update(position, fn(_) { state })
 
-  Board(..board, grid: new_grid)
+  Board(..board, grid: next_grid)
 }
 
 /// Toggle the state of a cell
 /// 
-pub fn toggle(board board: Board, position position: Position) -> Board {
+pub fn toggle(board board: Board, position position: matrix.Position) -> Board {
   set(board, position, case get(board, position) {
-    Alive -> Dead
-    _ -> Alive
+    True -> False
+    _ -> True
   })
 }
 
@@ -150,8 +120,8 @@ pub fn toggle(board board: Board, position position: Position) -> Board {
 /// 
 pub fn neighbours(
   board board: Board,
-  position position: Position,
-) -> List(CellState) {
+  position position: matrix.Position,
+) -> List(IsAlive) {
   let Position(row, col) = position
   let neigbours = [
     Position(row - 1, col - 1),
@@ -172,7 +142,7 @@ pub fn neighbours(
 /// 
 pub fn count_live_neighbours(
   board board: Board,
-  position position: Position,
+  position position: matrix.Position,
 ) -> Int {
   board
   |> neighbours(position)
@@ -183,49 +153,54 @@ pub fn count_live_neighbours(
 /// Generate the next generation of the board
 /// 
 pub fn next_generation(board: Board) -> Board {
-  let new_grid =
+  let next_grid =
     board.grid
-    |> dict.map_values(fn(position, cell) {
+    |> dict.map_values(fn(position, is_alive) {
       let live_neighbours =
         board
         |> count_live_neighbours(position)
 
-      case #(cell, live_neighbours) {
-        #(Alive, count) ->
+      case #(is_alive, live_neighbours) {
+        #(True, count) ->
           case count {
-            2 | 3 -> cell
-            _ -> Dead
+            2 | 3 ->
+              // lives on
+              is_alive
+            _ ->
+              // dies of underpopulation or overpopulation
+              False
           }
-        #(Dead, 3) -> Alive
-        #(Dead, _) -> cell
+        #(False, count) ->
+          // becomes alive if it has exactly 3 live neighbours
+          count == 3
       }
     })
 
-  Board(..board, grid: new_grid)
+  Board(..board, grid: next_grid)
 }
 
 /// Check if a cell is alive
 /// 
-pub fn is_alive(cell: CellState) -> Bool {
-  cell == Alive
+pub fn is_alive(cell: IsAlive) -> IsAlive {
+  cell
 }
 
 /// Convert the board to a string
 /// 
 pub fn to_string(board: Board) {
-  let range_y = list.range(0, board.height - 1)
-  let range_x = list.range(0, board.width - 1)
+  let rows = list.range(0, board.height - 1)
+  let cols = list.range(0, board.width - 1)
 
-  range_y
+  rows
   |> list.map(fn(y) {
-    range_x
+    cols
     |> list.map(fn(x) {
       let cell =
         board
-        |> get(Position(row: y, col: x))
+        |> get(Position(y, x))
 
       case cell {
-        Alive -> live_cell
+        True -> live_cell
         _ -> dead_cell
       }
     })

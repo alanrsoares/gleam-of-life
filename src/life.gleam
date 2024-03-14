@@ -13,7 +13,7 @@ pub fn main() {
             Error(_) -> 10
           }
 
-          board.random(25, 25)
+          board.random(width: 50, height: 20)
           |> board.play(generations)
         }
         _ -> render_usage()
