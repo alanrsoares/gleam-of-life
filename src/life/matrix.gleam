@@ -33,6 +33,8 @@ pub fn to_dict(matrix: Matrix(value)) -> dict.Dict(Position, value) {
   |> dict.from_list
 }
 
+/// Create a matrix of the given size, with each cell set to the result of the given function
+/// 
 pub fn new_with(
   height: Int,
   width: Int,
