@@ -37,8 +37,6 @@ fn parser() -> sheen.Parser(Args) {
   let assert Ok(parser) =
     sheen.new()
     |> sheen.name("Gleam of Life")
-    |> sheen.version("1.0.0")
-    |> sheen.authors(["alanrsoares"])
     |> sheen.build({
       use generations <-
         named.new("generations")
