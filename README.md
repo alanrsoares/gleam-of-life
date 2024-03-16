@@ -1,6 +1,6 @@
 # life
 
-Conway's Game of Life implementation in Gleam
+Conway's Game of Life implementation in [Gleam](https://gleam.run)
 
 [![Package Version](https://img.shields.io/hexpm/v/life)](https://hex.pm/packages/life)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/life/)
