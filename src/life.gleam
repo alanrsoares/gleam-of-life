@@ -15,11 +15,11 @@ pub fn main() {
       board.random(width: args.width, height: args.height)
       |> board.play(args.generations)
     }
-    Error(_) -> render_usage()
+    Error(_) -> render_help()
   }
 }
 
-pub fn render_usage() {
+fn render_help() {
   io.println(
     "Usage:
 
@@ -43,14 +43,12 @@ fn parser() -> sheen.Parser(Args) {
       use generations <-
         named.new("generations")
         |> named.short("g")
-        |> named.long("generations")
         |> named.integer()
         |> named.required()
 
       use width <-
         named.new("width")
         |> named.short("w")
-        |> named.long("width")
         |> named.integer()
         |> named.optional()
 
