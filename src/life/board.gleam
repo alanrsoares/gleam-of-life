@@ -1,9 +1,9 @@
+import gleam/dict
+import gleam/erlang/process
+import gleam/int
 import gleam/io
 import gleam/list
-import gleam/dict
-import gleam/int
 import gleam/string
-import gleam/erlang/process
 import life/matrix.{Position}
 
 /// A cell can be dead or alive
@@ -58,7 +58,7 @@ pub fn from_seed(rows: matrix.Matrix(IsAlive)) -> Board {
   let height = list.length(rows)
   let width = case list.first(rows) {
     Ok(row) -> list.length(row)
-    _ -> panic("Seed must have at least one row")
+    _ -> panic as "Seed must have at least one row"
   }
 
   let grid =
@@ -160,8 +160,8 @@ pub fn next_generation(board: Board) -> Board {
         board
         |> count_live_neighbours(position)
 
-      case #(is_alive, live_neighbours) {
-        #(True, count) ->
+      case is_alive, live_neighbours {
+        True, count ->
           case count {
             2 | 3 ->
               // lives on
@@ -170,7 +170,7 @@ pub fn next_generation(board: Board) -> Board {
               // dies of underpopulation or overpopulation
               False
           }
-        #(False, count) ->
+        False, count ->
           // becomes alive if it has exactly 3 live neighbours
           count == 3
       }
