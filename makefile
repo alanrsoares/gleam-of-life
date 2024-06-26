@@ -3,14 +3,15 @@ help:
 	@echo "clean - remove the binary file"
 	@echo "run - run the binary file"
 
-build: 
-	gleam run -m gleescript && chmod +x ./life
+bin:
+	@echo "Building binary..."
+	@gleam run -m gleescript && chmod +x ./life
 
 clean: 
-	rm -rf life build
+	@rm -rf life build
 
-test:
-	gleam test
+t:
+	@gleam test
 
 run: 
 	./life
