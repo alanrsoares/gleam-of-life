@@ -9,5 +9,8 @@ build:
 clean: 
 	rm -rf life build
 
+test:
+	gleam test
+
 run: 
 	./life
